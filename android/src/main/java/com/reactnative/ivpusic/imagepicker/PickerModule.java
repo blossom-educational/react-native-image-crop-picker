@@ -91,6 +91,7 @@ class PickerModule extends ReactContextBaseJavaModule implements ActivityEventLi
     private String cropperStatusBarColor = null;
     private String cropperToolbarColor = null;
     private String cropperToolbarTitle = null;
+    private String cropperToolbarWidgetColor = null;
 
     private int width = 0;
     private int height = 0;
@@ -132,6 +133,7 @@ class PickerModule extends ReactContextBaseJavaModule implements ActivityEventLi
         cropperStatusBarColor = options.hasKey("cropperStatusBarColor") ? options.getString("cropperStatusBarColor") : null;
         cropperToolbarColor = options.hasKey("cropperToolbarColor") ? options.getString("cropperToolbarColor") : null;
         cropperToolbarTitle = options.hasKey("cropperToolbarTitle") ? options.getString("cropperToolbarTitle") : null;
+        cropperToolbarWidgetColor = options.hasKey("cropperToolbarWidgetColor") ? options.getString("cropperToolbarWidgetColor") : null;
         cropperCircleOverlay = options.hasKey("cropperCircleOverlay") && options.getBoolean("cropperCircleOverlay");
         freeStyleCropEnabled = options.hasKey("freeStyleCropEnabled") && options.getBoolean("freeStyleCropEnabled");
         showCropGuidelines = !options.hasKey("showCropGuidelines") || options.getBoolean("showCropGuidelines");
@@ -494,6 +496,13 @@ class PickerModule extends ReactContextBaseJavaModule implements ActivityEventLi
 
         return bmp;
     }
+    
+    private static Long getVideoDuration(String path) {
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        retriever.setDataSource(path);
+
+        return Long.parseLong(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION));
+    }
 
     private void getVideo(final Activity activity, final String path, final String mime) throws Exception {
         validateVideo(path);
@@ -510,12 +519,14 @@ class PickerModule extends ReactContextBaseJavaModule implements ActivityEventLi
                         try {
                             Bitmap bmp = validateVideo(videoPath);
                             long modificationDate = new File(videoPath).lastModified();
+                            long duration = getVideoDuration(videoPath);
 
                             WritableMap video = new WritableNativeMap();
                             video.putInt("width", bmp.getWidth());
                             video.putInt("height", bmp.getHeight());
                             video.putString("mime", mime);
                             video.putInt("size", (int) new File(videoPath).length());
+                            video.putInt("duration", (int) duration);
                             video.putString("path", "file://" + videoPath);
                             video.putString("modificationDate", String.valueOf(modificationDate));
 
@@ -632,6 +643,10 @@ class PickerModule extends ReactContextBaseJavaModule implements ActivityEventLi
 
         if (cropperStatusBarColor != null) {
             options.setStatusBarColor(Color.parseColor(cropperStatusBarColor));
+        }
+
+        if (cropperToolbarWidgetColor != null) {
+            options.setToolbarWidgetColor(Color.parseColor(cropperToolbarWidgetColor));
         }
     }
 
